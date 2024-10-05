@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Yönetimi</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #007BFF;
+        }
+
+        h2 {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+
+        .form-section, .appointments-section {
+            margin-bottom: 30px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #f1f1f1;
+        }
+
+        .btn-custom {
+            background-color: #007BFF;
+            color: white;
+        }
+
+            .btn-custom:hover {
+                background-color: #0056b3;
+            }
+
+        .appointment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+            .appointment-item:last-child {
+                border-bottom: none;
+            }
+
+        .delete-btn, .update-btn {
+            margin-left: 10px;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Randevu Yönetimi</h1>
+
+        <div class="form-section">
+            <h2>Yeni Randevu Oluştur <i class="fas fa-plus-circle"></i></h2>
+            <form id="createAppointmentForm">
+                <div class="form-group">
+                    <label for="patientName">Hasta Adı:</label>
+                    <input type="text" id="patientName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentTime">Randevu Zamanı:</label>
+                    <input type="datetime-local" id="appointmentTime" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-custom">Randevu Oluştur <i class="fas fa-calendar-plus"></i></button>
+            </form>
+            <div id="message" class="alert" style="display:none;"></div>
+        </div>
+
+        <div class="appointments-section">
+            <h2>Tüm Randevular <i class="fas fa-list"></i></h2>
+            <ul id="appointmentsList" class="list-unstyled"></ul>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:5000/appointments'; // API URL
+
+        // Randevuları listeleme fonksiyonu
+        async function fetchAppointments() {
+            const response = await fetch(apiUrl);
+            const appointments = await response.json();
+            const appointmentsList = $('#appointmentsList');
+            appointmentsList.empty();
+            appointments.forEach(appointment => {
+                appointmentsList.append(`
+                            <li class="appointment-item">
+                                <div>
+                                    <strong>${appointment.patientName}</strong> - ${new Date(appointment.appointmentTime).toLocaleString()}
+                                </div>
+                                <div>
+                                    <button class="btn btn-warning btn-sm update-btn" onclick="showUpdateForm(${appointment.id}, '${appointment.patientName}', '${appointment.appointmentTime}')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm delete-btn" onclick="deleteAppointment(${appointment.id})"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </li>
+                        `);
+            });
+        }
+
+        // Yeni randevu oluşturma
+        $('#createAppointmentForm').on('submit', async function (event) {
+            event.preventDefault();
+            const patientName = $('#patientName').val();
+            const appointmentTime = $('#appointmentTime').val();
+            const appointmentData = { patientName, appointmentTime };
+
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appointmentData),
+            });
+
+            $('#createAppointmentForm')[0].reset(); // Formu sıfırla
+            $('#message').text('Randevu başarıyla oluşturuldu.').addClass('alert-success').show();
+            fetchAppointments(); // Randevuları yenile
+
+            setTimeout(() => {
+                $('#message').fadeOut();
+            }, 3000);
+        });
+
+        // Randevu silme
+        async function deleteAppointment(id) {
+            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+            $('#message').text('Randevu başarıyla silindi.').addClass('alert-danger').show();
+            fetchAppointments(); // Randevuları yenile
+
+            setTimeout(() => {
+                $('#message').fadeOut();
+            }, 3000);
+        }
+
+        // Randevu güncelleme
+        function showUpdateForm(id, patientName, appointmentTime) {
+            $('#patientName').val(patientName);
+            $('#appointmentTime').val(appointmentTime);
+
+            $('#createAppointmentForm').off('submit').on('submit', async function (event) {
+                event.preventDefault();
+                const updatedAppointmentData = {
+                    patientName: $('#patientName').val(),
+                    appointmentTime: $('#appointmentTime').val(),
+                };
+
+                await fetch(`${apiUrl}/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedAppointmentData),
+                });
+
+                $('#createAppointmentForm')[0].reset(); // Formu sıfırla
+                $('#message').text('Randevu başarıyla güncellendi.').addClass('alert-success').show();
+                fetchAppointments(); // Randevuları yenile
+
+                setTimeout(() => {
+                    $('#message').fadeOut();
+                }, 3000);
+
+                // Formu yeni randevu ekleme moduna geri döndür
+                $('#createAppointmentForm').off('submit').on('submit', async function (event) {
+                    event.preventDefault();
+                    const newAppointmentData = {
+                        patientName: $('#patientName').val(),
+                        appointmentTime: $('#appointmentTime').val(),
+                    };
+                    await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newAppointmentData),
+                    });
+                    fetchAppointments();
+                });
+            });
+        }
+
+        // Sayfa yüklendiğinde randevuları getir
+        $(document).ready(function () {
+            fetchAppointments();
+        });
+    </script>
+</body>
+</html>

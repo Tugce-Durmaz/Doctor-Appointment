@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f8;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-container, .patients-list {
+            margin: 0 auto;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]:focus, input[type="number"]:focus {
+                border-color: #4CAF50;
+                outline: none;
+            }
+
+        input[type="submit"] {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            input[type="submit"]:hover {
+                background-color: #45a049;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #ffa500;
+            color: white;
+        }
+
+            .edit-btn:hover {
+                background-color: #ff8c00;
+            }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+            .delete-btn:hover {
+                background-color: #d32f2f;
+            }
+
+        input[type="text"]#search-bar {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]#search-bar:focus {
+                border-color: #4CAF50;
+                outline: none;
+            }
+    </style>
+</head>
+<body>
+
+    <h1>Patient Management</h1>
+
+    <!-- Patient Form -->
+    <div class="form-container">
+        <form id="patient-form">
+            <input type="hidden" id="patient-id">
+            <label for="name">Name:</label>
+            <input type="text" id="name" placeholder="Enter patient name" required>
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" placeholder="Enter patient last name" required>
+            <label for="tcNO">TC NO:</label>
+            <input type="number" id="tcNO" placeholder="Enter TC NO" required>
+            <input type="submit" value="Add Patient">
+        </form>
+    </div>
+
+    <!-- Patient List -->
+    <div class="patients-list">
+        <h2>Patients</h2>
+        <input type="text" id="search-bar" placeholder="Search patients by name or TC NO" oninput="searchPatients()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last Name</th>
+                    <th>TC NO</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table-body">
+                <!-- Dynamic rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let patients = [];
+
+        // Form submit event to add or update a patient
+        document.getElementById('patient-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('patient-id').value;
+            const name = document.getElementById('name').value;
+            const lastName = document.getElementById('lastName').value;
+            const tcNO = document.getElementById('tcNO').value;
+
+            if (id) {
+                updatePatient(id, name, lastName, tcNO);
+            } else {
+                addPatient(name, lastName, tcNO);
+            }
+        });
+
+        // Add a new patient
+        function addPatient(name, lastName, tcNO) {
+            const newPatient = { id: Date.now().toString(), name, lastName, tcNO };
+            patients.push(newPatient);
+            renderPatients();
+            resetForm();
+        }
+
+        // Update an existing patient
+        function updatePatient(id, name, lastName, tcNO) {
+            patients = patients.map(patient =>
+                patient.id === id ? { id, name, lastName, tcNO } : patient
+            );
+            renderPatients();
+            resetForm();
+        }
+
+        // Edit patient
+        function editPatient(id) {
+            const patient = patients.find(p => p.id === id);
+            document.getElementById('patient-id').value = patient.id;
+            document.getElementById('name').value = patient.name;
+            document.getElementById('lastName').value = patient.lastName;
+            document.getElementById('tcNO').value = patient.tcNO;
+        }
+
+        // Delete patient
+        function deletePatient(id) {
+            patients = patients.filter(patient => patient.id !== id);
+            renderPatients();
+        }
+
+        // Render patients to the table
+        function renderPatients() {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            patients.forEach(patient => {
+                const row = `<tr>
+                          <td>${patient.name}</td>
+                          <td>${patient.lastName}</td>
+                          <td>${patient.tcNO}</td>
+                          <td class="actions">
+                            <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                          </td>
+                        </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Reset form fields
+        function resetForm() {
+            document.getElementById('patient-id').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('tcNO').value = '';
+        }
+
+        // Search patients by name or TC NO
+        function searchPatients() {
+            const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+            const filteredPatients = patients.filter(patient =>
+                patient.name.toLowerCase().includes(searchTerm) || patient.tcNO.includes(searchTerm)
+            );
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            filteredPatients.forEach(patient => {
+                const row = `<tr>
+                          <td>${patient.name}</td>
+                          <td>${patient.lastName}</td>
+                          <td>${patient.tcNO}</td>
+                          <td class="actions">
+                            <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                          </td>
+                        </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+    </script>
+</body>
+</html>
