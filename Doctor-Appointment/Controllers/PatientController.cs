@@ -24,23 +24,27 @@ namespace Doctor_Appointment.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CreatePatientDto createPatientDto)
+        public async Task<IActionResult> Create([FromBody] CreatePatientDto createPatientDto)
         {
-            Console.WriteLine(createPatientDto.Name);
-            Console.WriteLine(createPatientDto.LastName);
-            Console.WriteLine(createPatientDto.TcNO);
+            // Model doğrulama
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); // Model hatası varsa döndür
             }
+
+            // Verileri konsola yazdır
+            Console.WriteLine(createPatientDto.Name);
+            Console.WriteLine(createPatientDto.LastName);
+            Console.WriteLine(createPatientDto.TcNO);
+
             var id = await _patientService.CreateAsync(createPatientDto);
             if (id <= 0) // Kayıt başarısızsa
             {
                 return StatusCode(500, "Kayıt işlemi sırasında bir hata oluştu.");
             }
+
             return CreatedAtAction(nameof(FindOne), new { id }, new { id });
         }
-
 
         [HttpGet]
             public async Task<ActionResult<IEnumerable<Patient>>> FindAll()

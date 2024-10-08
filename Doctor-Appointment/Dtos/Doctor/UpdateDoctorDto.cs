@@ -5,8 +5,10 @@
     {
         public new string Name { get; set; }
         public new string LastName { get; set; }
-        //public new string Branch { get; set; }
+
+      
     }
+
 
 }
 

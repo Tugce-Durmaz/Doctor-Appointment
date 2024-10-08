@@ -6,6 +6,7 @@
     <title>Hasta Yönetimi</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* Stil ayarları */
         * {
             margin: 0;
             padding: 0;
@@ -14,77 +15,83 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f3; /* Açık arka plan rengi */
+            background-color: #eef2f3;
             color: #333;
         }
 
         .container {
-            max-width: 600px; /* Genişlik sınırı */
-            margin: 50px auto; /* Üst ve alt boşluk */
+            max-width: 600px;
+            margin: 50px auto;
             padding: 30px;
-            background-color: #ffffff; /* Beyaz arka plan */
-            border-radius: 8px; /* Köşe yuvarlama */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Daha belirgin gölge */
-            transition: box-shadow 0.3s; /* Hover efekti için geçiş */
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
         }
 
             .container:hover {
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Hover sırasında daha fazla gölge */
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             }
 
         h1 {
             text-align: center;
-            margin-bottom: 30px; /* Başlık altında boşluk */
-            color: #007BFF; /* Başlık rengi */
+            margin-bottom: 30px;
+            color: #007BFF;
         }
 
         .form-section {
-            margin-bottom: 40px; /* Bölümler arası boşluk */
+            margin-bottom: 40px;
         }
 
         h2 {
-            margin-bottom: 15px; /* Alt başlıklar için boşluk */
-            font-size: 1.5em; /* Daha büyük başlık boyutu */
-            color: #333; /* Başlık rengi */
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            color: #333;
         }
 
         label {
             display: block;
-            margin-bottom: 8px; /* Etiketler arası boşluk */
-            font-weight: bold; /* Kalın yazı */
+            margin-bottom: 8px;
+            font-weight: bold;
         }
 
         input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 12px; /* İç boşluk */
-            margin-bottom: 20px; /* Giriş alanları arasında boşluk */
-            border: 1px solid #ccc; /* Giriş kenar rengi */
-            border-radius: 4px; /* Köşe yuvarlama */
-            transition: border-color 0.3s; /* Kenar rengi geçiş efekti */
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
         }
 
             input[type="text"]:focus, input[type="number"]:focus {
-                border-color: #007BFF; /* Fokusta mavi kenar rengi */
-                outline: none; /* Kenar çizgisi kaldırıldı */
+                border-color: #007BFF;
+                outline: none;
             }
 
         .btn {
-            background-color: #007BFF; /* Buton rengi */
-            color: #fff; /* Yazı rengi */
-            padding: 12px 20px; /* İç boşluk */
+            background-color: #007BFF;
+            color: #fff;
+            padding: 12px 20px;
             border: none;
-            border-radius: 4px; /* Köşe yuvarlama */
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px; /* Yazı boyutu */
-            transition: background-color 0.3s; /* Geçiş efekti */
-            display: block; /* Buton merkezi konumlandırma */
-            width: 100%; /* Buton genişliği */
-            margin-top: 10px; /* Buton üstü boşluk */
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
         }
 
             .btn:hover {
-                background-color: #0056b3; /* Hoverda daha koyu mavi */
+                background-color: #0056b3;
             }
+
+        /* Mesaj stili */
+        #message {
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -93,45 +100,81 @@
 
         <div class="form-section">
             <h2>Yeni Hasta Oluştur</h2>
-            <form id="createPatientForm">
+            <form id="createPatientForm" asp-action="Create" method="POST">
+
                 <label for="name">Hasta Adı:</label>
-                <input type="text" id="name" placeholder="Adı girin..." required>
+                <input type="text" id="name" name="Name" placeholder="Adı girin..." required>
 
                 <label for="lastName">Hasta Soyadı:</label>
-                <input type="text" id="lastName" placeholder="Soyadı girin..." required>
+                <input type="text" id="lastName" name="LastName" placeholder="Soyadı girin..." required>
 
-                <label for="tcNo">TC Kimlik No:</label>
-                <input type="number" id="tcNo" placeholder="TC kimlik numarasını girin..." required>
+                <label for="tcNO">TC Kimlik No:</label>
+                <input type="number" id="tcNO" name="TcNO" placeholder="TC kimlik numarasını girin..." required min="10000000000" max="99999999999">
 
                 <button type="submit" class="btn">Hasta Oluştur</button>
             </form>
+
+            <!-- Ekranda mesajın görüntüleneceği alan -->
+            <div id="message" style="display: none;">
+                <span id="messageIcon" style="display: inline-block; margin-right: 10px;"></span>
+                <span id="messageText"></span>
+            </div>
         </div>
     </div>
 
     <script>
-        const apiUrl = 'http://localhost:5000/patients'; // API URL
-
         $('#createPatientForm').on('submit', async function (event) {
-            event.preventDefault();
+            event.preventDefault(); // Formun varsayılan gönderimini engelle
+
             const name = $('#name').val();
             const lastName = $('#lastName').val();
-            const tcNo = $('#tcNo').val();
+            const tcNo = $('#tcNO').val(); // Doğru id'yi kullandık
+
             const patientData = {
-                name: name,
-                lastName: lastName,
-                tcNO: tcNo
+                Name: name,
+                LastName: lastName,
+                TcNO: parseInt(tcNo) // TC Kimlik numarasını tam sayıya çevir
             };
 
-            await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(patientData),
-            });
+            try {
+                const response = await fetch('/patients', { // API URL burada doğrudan yazılabilir.
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(patientData),
+                });
 
-            $('#createPatientForm')[0].reset(); // Formu sıfırla
+                if (response.status === 409) { // 409 Conflict durumu
+                    $('#messageIcon').html('❌'); // Kırmızı çarpı ikonu
+                    $('#messageText').text('Daha önceden hasta kaydı var.'); // Hata mesajı
+                    $('#message').css('color', 'red').fadeIn(); // Mesaj alanını kırmızı yap ve göster
+
+                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
+                    setTimeout(() => {
+                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
+                    }, 3000); // 3000 ms = 3 saniye
+                } else if (response.ok) {
+                    const data = await response.json();
+                    console.log('Hasta başarıyla oluşturuldu:', data);
+
+                    // Başarılı mesajı göster
+                    $('#messageIcon').html('✅'); // Yeşil tik ikonu
+                    $('#messageText').text('Hasta kaydı alınmıştır.'); // Mesaj
+                    $('#message').css('color', 'green').fadeIn(); // Mesaj alanını yeşil yap ve göster
+                    $('#createPatientForm')[0].reset(); // Formu sıfırla
+
+                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
+                    setTimeout(() => {
+                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
+                    }, 3000); // 3000 ms = 3 saniye
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Hasta oluşturulurken bir hata oluştu: ' + error.message);
+            }
         });
     </script>
+
 </body>
 </html>

@@ -1,4 +1,5 @@
 ﻿using Doctor_Appointment.Dtos.Doctor;
+using Doctor_Appointment.Dtos.Patient;
 using Doctor_Appointment.Models;
 using Doctor_Appointment.Service;
 using Doctor_Appointment.Service.Abstract;
@@ -11,7 +12,7 @@ namespace Doctor_Appointment.Controllers
 {
  
         [ApiController]
-        [Route("doctors")]
+        [Route("/doctors")]
         public class DoctorController : ControllerBase
         {
             private readonly IDoctorService _doctorService;
@@ -21,14 +22,18 @@ namespace Doctor_Appointment.Controllers
                 _doctorService = doctorService;
             }
 
-            [HttpPost]
-            public async Task<IActionResult> Create([FromBody] CreateDoctorDto createDoctorDto)
-            {
-                var id = await _doctorService.CreateAsync(createDoctorDto);
-                return CreatedAtAction(nameof(FindOne), new { id }, new { id });
-            }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateDoctorDto createDoctorDto)
+        {
+         
 
-            [HttpGet]
+            var id = await _doctorService.CreateAsync(createDoctorDto);
+            // Kayıt başarılı ise
+            return CreatedAtAction(nameof(FindOne), new { id }, new { id });
+        }
+
+
+        [HttpGet]
             public async Task<ActionResult<IEnumerable<Doctor>>> GetAllAsync()
             {
                 var doctors = await _doctorService.GetAllAsync();

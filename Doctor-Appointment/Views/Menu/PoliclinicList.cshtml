@@ -127,11 +127,22 @@
             .remove-doctor-btn:hover {
                 background-color: #218838;
             }
+
+        .notification {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-radius: 4px;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Poliklinik Listesi</h1>
+
+        <div class="notification" id="notification"></div>
 
         <div class="form-section">
             <h2>Yeni Poliklinik Oluştur</h2>
@@ -150,6 +161,16 @@
 
     <script>
         const apiUrl = 'http://localhost:5000/policlinics'; // API URL
+
+        // Kullanıcı bildirim fonksiyonu
+        function showNotification(message) {
+            const notification = $('#notification');
+            notification.text(message);
+            notification.show();
+            setTimeout(() => {
+                notification.hide();
+            }, 3000);
+        }
 
         // Poliklinikleri listeleme fonksiyonu
         async function fetchPoliclinics() {
@@ -186,12 +207,14 @@
 
             $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
             fetchPoliclinics(); // Poliklinikleri yenile
+            showNotification("Yeni poliklinik başarıyla oluşturuldu."); // Bildirim göster
         });
 
         // Poliklinik silme
         async function deletePoliclinic(id) {
             await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
             fetchPoliclinics(); // Poliklinikleri yenile
+            showNotification("Poliklinik başarıyla silindi."); // Bildirim göster
         }
 
         // Poliklinik güncelleme
@@ -210,6 +233,7 @@
 
                 $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
                 fetchPoliclinics(); // Poliklinikleri yenile
+                showNotification("Poliklinik başarıyla güncellendi."); // Bildirim göster
 
                 // Formu yeni poliklinik ekleme moduna geri döndür
                 $('#createPoliclinicForm').off('submit').on('submit', async function (event) {
@@ -229,18 +253,18 @@
         async function addDoctor(policlinicId, doctorId) {
             await fetch(`${apiUrl}/${policlinicId}/doctors/${doctorId}`, { method: 'PATCH' });
             fetchPoliclinics();
+            showNotification("Doktor başarıyla eklendi."); // Bildirim göster
         }
 
         // Doktor çıkarma
         async function removeDoctor(policlinicId, doctorId) {
             await fetch(`${apiUrl}/${policlinicId}/doctors/${doctorId}`, { method: 'DELETE' });
             fetchPoliclinics();
+            showNotification("Doktor başarıyla çıkarıldı."); // Bildirim göster
         }
 
-        // Sayfa yüklendiğinde poliklinikleri getir
-        $(document).ready(function () {
-            fetchPoliclinics();
-        });
+        // Sayfa yüklendiğinde poliklinikleri çek
+        $(document).ready(fetchPoliclinics);
     </script>
 </body>
 </html>

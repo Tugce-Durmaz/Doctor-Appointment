@@ -73,6 +73,14 @@ using Doctor_Appointment.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+});
+
 // Servisleri konteynerimize ekleyelim.
 builder.Services.AddControllersWithViews();
 
@@ -121,6 +129,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseCors("AllowAllOrigins");
+
 app.UseAuthorization();
 
 app.MapControllerRoute(

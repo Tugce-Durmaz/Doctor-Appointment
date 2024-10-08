@@ -14,6 +14,8 @@ namespace Doctor_Appointment.Models
             [Column]
             public string LastName { get; set; }
 
+           
+
       
 
         // One-to-Many relationship with Appointment
