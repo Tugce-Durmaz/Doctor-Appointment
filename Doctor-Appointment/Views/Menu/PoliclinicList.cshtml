@@ -146,21 +146,25 @@
 
         <div class="form-section">
             <h2>Yeni Poliklinik Oluştur</h2>
-            <form id="createPoliclinicForm">
+            <form id="createPoliclinicForm" asp-action="Create" method="POST">
                 <label for="name">Poliklinik Adı:</label>
                 <input type="text" id="name" required>
                 <button type="submit" class="btn">Poliklinik Oluştur</button>
             </form>
         </div>
 
-        <div class="policlinics-section">
+        <div class="policlinics-list">
             <h2>Tüm Poliklinikler</h2>
             <ul id="policlinicsList"></ul>
         </div>
+
+       
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        const apiUrl = 'http://localhost:5000/policlinics'; // API URL
+        const apiUrl = 'https://localhost:7217/policlinics'; // Doğru URL
+
 
         // Kullanıcı bildirim fonksiyonu
         function showNotification(message) {
@@ -173,94 +177,186 @@
         }
 
         // Poliklinikleri listeleme fonksiyonu
-        async function fetchPoliclinics() {
-            const response = await fetch(apiUrl);
-            const policlinics = await response.json();
-            const policlinicsList = $('#policlinicsList');
-            policlinicsList.empty();
-            policlinics.forEach(policlinic => {
-                policlinicsList.append(`
-                            <li>
-                                ${policlinic.name}
-                                <div>
-                                    <button class="update-btn" onclick="showUpdateForm(${policlinic.id}, '${policlinic.name}')">Güncelle</button>
-                                    <button class="delete-btn" onclick="deletePoliclinic(${policlinic.id})">Sil</button>
-                                    <button class="add-doctor-btn" onclick="addDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Ekle</button>
-                                    <button class="remove-doctor-btn" onclick="removeDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Çıkar</button>
-                                </div>
-                            </li>
-                        `);
-            });
-        }
+        // async function fetchPoliclinics() {
+        //     try {
+        //         const response = await fetch(apiUrl);
+        //         if (!response.ok) {
+        //             throw new Error(`HTTP hata: ${response.status}`);
+        //         }
+        //         const policlinics = await response.json();
+        //         const policlinicsList = $('#policlinicsList');
+        //         policlinicsList.empty();
+        //         policlinics.forEach(policlinic => {
+        //             policlinicsList.append(`
+        //                 <li>
+        //                     ${policlinic.name}
+        //                     <div>
+        //                         <button class="update-btn" onclick="showUpdateForm(${policlinic.id}, '${policlinic.name}')">Güncelle</button>
+        //                         <button class="delete-btn" onclick="deletePoliclinic(${policlinic.id})">Sil</button>
+        //                         <button class="add-doctor-btn" onclick="addDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Ekle</button>
+        //                         <button class="remove-doctor-btn" onclick="removeDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Çıkar</button>
+        //                     </div>
+        //                 </li>
+        //             `);
+        //         });
+        //     } catch (error) {
+        //         console.error('Fetch işlemi başarısız:', error);
+        //     }
+        // }
+
+
+
+        $(document).ready(function () {
+            // Doktorları Yükleme
+            function loadPoliclinics() {
+                $.get("/policlinics", function (data) {
+                    $('#policlinicList').empty();
+                    data.forEach(function (doctor) {
+                        $('#policlinicList').append(`
+                                                        <div class="doc-item">
+                                                            <h3>${policlinic.name}</h3>
+                                                                     <h3>${policlinic.lastName}</h3>
+
+                                                                     <button class="update-btn" onclick="showUpdateForm(${policlinic.id}, '${policlinic.name}')">Güncelle</button>
+                                        <button class="delete-btn" onclick="deletePoliclinic(${policlinic.id})">Sil</button>
+                                        <button class="add-doctor-btn" onclick="addDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Ekle</button>
+                                        <button class="remove-doctor-btn" onclick="removeDoctor(${policlinic.id}, prompt('Doktor ID:'))">Doktor Çıkar</button>
+                                                        </div>
+                                                    `);
+                    });
+                });
+            }
+
+
 
         // Yeni poliklinik oluşturma
         $('#createPoliclinicForm').on('submit', async function (event) {
-            event.preventDefault();
-            const name = $('#name').val();
-            const policlinicData = { name };
+            event.preventDefault(); // Formun varsayılan submit işlemini engelle
 
-            await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(policlinicData),
-            });
+            const name = $('#name').val(); // Formdaki poliklinik adı değeri
+            const policlinicData = { name }; // JSON verisi olarak oluştur
 
-            $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
-            fetchPoliclinics(); // Poliklinikleri yenile
-            showNotification("Yeni poliklinik başarıyla oluşturuldu."); // Bildirim göster
+            try {
+                const response = await fetch('/policlinics', {  // API URL doğru olmalı
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }, // JSON formatı ayarlanıyor
+                    body: JSON.stringify(policlinicData), // JSON verisi gönderiliyor
+                });
+
+                if (response.ok) {
+                    fetchPoliclinics(); // Poliklinik listesini yenile
+                    showNotification("Yeni poliklinik başarıyla oluşturuldu!"); // Başarı mesajı göster
+                    $('#createPoliclinicForm')[0].reset(); // Formu temizle
+                } else {
+                    const errorMessage = await response.text(); // Hata mesajını al
+                    alert("Bir hata oluştu: " + errorMessage); // Hata mesajını göster
+                }
+            } catch (error) {
+                alert("Bir hata oluştu: " + error.message); // Fetch işleminde bir hata olursa
+            }
         });
+
 
         // Poliklinik silme
         async function deletePoliclinic(id) {
-            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
-            fetchPoliclinics(); // Poliklinikleri yenile
-            showNotification("Poliklinik başarıyla silindi."); // Bildirim göster
+            try {
+                const response = await fetch(`/policlinics/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    fetchPoliclinics(); // Poliklinik listesini yenile
+                    showNotification("Poliklinik başarıyla silindi.");
+                } else {
+                    alert("Silme işleminde bir hata oluştu.");
+                }
+            } catch (error) {
+                alert("Bir hata oluştu: " + error.message);
+            }
         }
+
 
         // Poliklinik güncelleme
         function showUpdateForm(id, name) {
-            $('#name').val(name);
+            $('#name').val(name); // Güncellenecek polikliniğin adını form alanına doldur
 
             $('#createPoliclinicForm').off('submit').on('submit', async function (event) {
                 event.preventDefault();
                 const updatedPoliclinicData = { name: $('#name').val() };
 
-                await fetch(`${apiUrl}/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedPoliclinicData),
-                });
+                try {
+                    const response = await fetch(`/policlinics/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedPoliclinicData),
+                    });
 
-                $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
-                fetchPoliclinics(); // Poliklinikleri yenile
-                showNotification("Poliklinik başarıyla güncellendi."); // Bildirim göster
+                    if (response.ok) {
+                        $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
+                        fetchPoliclinics(); // Poliklinikleri yenile
+                        showNotification("Poliklinik başarıyla güncellendi.");
 
-                // Formu yeni poliklinik ekleme moduna geri döndür
-                $('#createPoliclinicForm').off('submit').on('submit', async function (event) {
-                    event.preventDefault();
-                    const newPoliclinicData = { name: $('#name').val() };
-                    await fetch(apiUrl, {
+                        // Formu yeni poliklinik ekleme moduna döndür
+                        resetCreatePoliclinicForm();
+                    } else {
+                        alert("Güncelleme işleminde bir hata oluştu.");
+                    }
+                } catch (error) {
+                    alert("Bir hata oluştu: " + error.message);
+                }
+            });
+        }
+
+        function resetCreatePoliclinicForm() {
+            $('#createPoliclinicForm').off('submit').on('submit', async function (event) {
+                event.preventDefault();
+                const newPoliclinicData = { name: $('#name').val() };
+
+                try {
+                    const response = await fetch('/policlinics', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newPoliclinicData),
                     });
-                    fetchPoliclinics();
-                });
+
+                    if (response.ok) {
+                        fetchPoliclinics(); // Poliklinikleri yenile
+                        $('#createPoliclinicForm')[0].reset(); // Formu sıfırla
+                        showNotification("Yeni poliklinik başarıyla oluşturuldu.");
+                    } else {
+                        alert("Ekleme işleminde bir hata oluştu.");
+                    }
+                } catch (error) {
+                    alert("Bir hata oluştu: " + error.message);
+                }
             });
         }
 
         // Doktor ekleme
         async function addDoctor(policlinicId, doctorId) {
-            await fetch(`${apiUrl}/${policlinicId}/doctors/${doctorId}`, { method: 'PATCH' });
-            fetchPoliclinics();
-            showNotification("Doktor başarıyla eklendi."); // Bildirim göster
+            try {
+                const response = await fetch(`/policlinics/${policlinicId}/doctors/${doctorId}`, { method: 'PATCH' });
+                if (response.ok) {
+                    fetchPoliclinics(); // Poliklinik listesini yenile
+                    showNotification("Doktor başarıyla eklendi.");
+                } else {
+                    alert("Doktor ekleme işleminde bir hata oluştu.");
+                }
+            } catch (error) {
+                alert("Bir hata oluştu: " + error.message);
+            }
         }
 
         // Doktor çıkarma
         async function removeDoctor(policlinicId, doctorId) {
-            await fetch(`${apiUrl}/${policlinicId}/doctors/${doctorId}`, { method: 'DELETE' });
-            fetchPoliclinics();
-            showNotification("Doktor başarıyla çıkarıldı."); // Bildirim göster
+            try {
+                const response = await fetch(`/policlinics/${policlinicId}/doctors/${doctorId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    fetchPoliclinics(); // Poliklinik listesini yenile
+                    showNotification("Doktor başarıyla çıkarıldı.");
+                } else {
+                    alert("Doktor çıkarma işleminde bir hata oluştu.");
+                }
+            } catch (error) {
+                alert("Bir hata oluştu: " + error.message);
+            }
         }
 
         // Sayfa yüklendiğinde poliklinikleri çek

@@ -56,7 +56,7 @@ namespace Doctor_Appointment.Service
             return policlinic.Id; // Veya gerekli dönüş türünü ayarlayın
         }
 
-        public async Task<IEnumerable<Policlinic>> FindAllAsync()
+        public async Task<IEnumerable<Policlinic>> GetAllAsync()
         {
             return await _policlinicRepository.GetAllAsync(new[] { "Doctors" });
         }
@@ -71,8 +71,6 @@ namespace Doctor_Appointment.Service
 
             return policlinic;
         }
-
-      
 
         public async Task RemoveAsync(int id)
         {
@@ -119,5 +117,7 @@ namespace Doctor_Appointment.Service
             await _policlinicRepository.UpdateAsync(policlinic);
             return policlinic.Id;
         }
+
+      
     }
 }

@@ -7,7 +7,7 @@ namespace Doctor_Appointment.Service.Abstract
     {
 
             Task<int> CreateAsync(CreatePoliclinicDto createPoliclinicDto);
-            Task<IEnumerable<Policlinic>> FindAllAsync();
+            Task<IEnumerable<Policlinic>> GetAllAsync();
             Task<Policlinic> FindOneAsync(int id);
             Task<int> UpdateAsync(int id, UpdatePoliclinicDto updatePoliclinicDto);
             Task RemoveAsync(int id);

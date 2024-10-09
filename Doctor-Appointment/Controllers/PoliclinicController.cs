@@ -9,29 +9,30 @@ using System.Threading.Tasks;
 
 namespace Doctor_Appointment.Controllers
 {
-        [ApiController]
-        [Route("policlinics")]
-        public class PoliclinicController : ControllerBase
+    [ApiController]
+    [Route("policlinics")]
+    public class PoliclinicController : ControllerBase
+    {
+        private readonly IPoliclinicService _policlinicService;
+
+        public PoliclinicController(IPoliclinicService policlinicService)
         {
-            private readonly IPoliclinicService _policlinicService;
+            _policlinicService = policlinicService;
+        }
 
-            public PoliclinicController(IPoliclinicService policlinicService)
-            {
-                _policlinicService = policlinicService;
-            }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreatePoliclinicDto createPoliclinicDto)
+        {
+            var id = await _policlinicService.CreateAsync(createPoliclinicDto);
+            return CreatedAtAction(nameof(FindOne), new { id }, new { id });
+        }
 
-            [HttpPost]
-            public async Task<IActionResult> Create([FromBody] CreatePoliclinicDto createPoliclinicDto)
-            {
-                var id = await _policlinicService.CreateAsync(createPoliclinicDto);
-                return CreatedAtAction(nameof(FindOne), new { id }, new { id });
-            }
-
-            [HttpGet]
-            public async Task<ActionResult<IEnumerable<Policlinic>>> FindAll()
-            {
-                var policlinics = await _policlinicService.FindAllAsync();
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Policlinic>>> GetAll()
+        {
+            var policlinics = await _policlinicService.GetAllAsync();
             return Ok(policlinics);
+
         }
 
        
