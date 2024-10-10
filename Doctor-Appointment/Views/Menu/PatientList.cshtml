@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿@* <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -212,3 +212,842 @@
     </script>
 </body>
 </html>
+ *@
+@* 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #eaf4fc;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+        }
+
+        .form-container, .patients-list {
+            margin: 0 auto;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]:focus, input[type="number"]:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        input[type="submit"], .update-btn {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            input[type="submit"]:hover, .update-btn:hover {
+                background-color: #1665c1;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #d0e0f5;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+            .edit-btn:hover {
+                background-color: #1665c1;
+            }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+            .delete-btn:hover {
+                background-color: #d32f2f;
+            }
+
+        input[type="text"]#search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]#search-bar:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        /* Düzenleme formunun başlangıçta gizli olması */
+        #edit-form-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Patient Management</h1>
+
+    <!-- Düzenleme Formu -->
+    <div id="edit-form-container" class="form-container">
+        <h2>Edit Patient</h2>
+        <form id="edit-form" onsubmit="updatePatient(event)">
+            <input type="hidden" id="edit-id" />
+            <input type="text" id="edit-name" placeholder="Name" required />
+            <input type="text" id="edit-lastName" placeholder="Last Name" required />
+            <input type="text" id="edit-tcNO" placeholder="TC NO" disabled />
+            <button type="submit" class="update-btn">Update Patient</button>
+        </form>
+    </div>
+
+    <!-- Patient List -->
+    <div class="patients-list">
+        <h2>Patients</h2>
+        <input type="text" id="search-bar" placeholder="Search patients by name or TC NO" oninput="searchPatients()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last Name</th>
+                    <th>TC NO</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table-body">
+                <!-- Hastalar buraya eklenecek -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let patients = [];
+
+        // Sayfa yüklendiğinde hastaları al
+        document.addEventListener('DOMContentLoaded', async function () {
+            await fetchPatients();
+        });
+
+        // Hastaları backend'den al
+        async function fetchPatients() {
+            try {
+                const response = await fetch('/patients');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                patients = await response.json();
+                renderPatients();
+            } catch (error) {
+                console.error('Hata:', error);
+            }
+        }
+
+        // Render patients to the table
+        function renderPatients() {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            patients.forEach(patient => {
+                const row = `<tr>
+                                                  <td>${patient.name}</td>
+                                                  <td>${patient.lastName}</td>
+                                                  <td>${patient.tcNO}</td>
+                                                  <td class="actions">
+                                                    <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                                                    <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                                                  </td>
+                                                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Edit patient (open edit form with patient data)
+        function editPatient(id) {
+            const patient = patients.find(p => p.id === id);
+            if (!patient) return;
+
+            document.getElementById('edit-id').value = patient.id;
+            document.getElementById('edit-name').value = patient.name;
+            document.getElementById('edit-lastName').value = patient.lastName;
+            document.getElementById('edit-tcNO').value = patient.tcNO;
+
+            // Formu görünür yap
+            document.getElementById('edit-form-container').style.display = 'block';
+        }
+
+        // Update patient
+        async function updatePatient(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const lastName = document.getElementById('edit-lastName').value;
+
+            try {
+                const response = await fetch(`/patients/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, lastName })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to update patient.');
+                }
+                // Hasta bilgilerini güncelle
+                patients = patients.map(p => p.id === id ? { ...p, name, lastName } : p);
+                renderPatients();
+
+                // Formu gizle ve temizle
+                document.getElementById('edit-form-container').style.display = 'none';
+                document.getElementById('edit-form').reset();
+
+                alert('Patient updated successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating the patient.');
+            }
+        }
+
+        // Delete patient
+        async function deletePatient(id) {
+            const confirmation = confirm('Are you sure you want to delete this patient?');
+            if (!confirmation) return;
+
+            try {
+                const response = await fetch(`/patients/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete patient.');
+                }
+                patients = patients.filter(patient => patient.id !== id);
+                renderPatients();
+                alert('Patient deleted successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the patient.');
+            }
+        }
+
+        // Search patients
+        function searchPatients() {
+            const query = document.getElementById('search-bar').value.toLowerCase();
+            const filteredPatients = patients.filter(patient =>
+                patient.name.toLowerCase().includes(query) || patient.tcNO.includes(query)
+            );
+            renderFilteredPatients(filteredPatients);
+        }
+
+        // Render filtered patients to the table
+        function renderFilteredPatients(filteredPatients) {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            filteredPatients.forEach(patient => {
+                const row = `<tr>
+                                        <td>${patient.name}</td>
+                                        <td>${patient.lastName}</td>
+                                        <td>${patient.tcNO}</td>
+                                        <td class="actions">
+                                            <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                                        </td>
+                                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+    </script>
+
+</body>
+</html>
+
+ *@
+@* 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #eaf4fc;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+        }
+
+        .form-container, .patients-list {
+            margin: 0 auto;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]:focus, input[type="number"]:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        input[type="submit"], .update-btn {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            input[type="submit"]:hover, .update-btn:hover {
+                background-color: #1665c1;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #d0e0f5;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+            .edit-btn:hover {
+                background-color: #1665c1;
+            }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+            .delete-btn:hover {
+                background-color: #d32f2f;
+            }
+
+        input[type="text"]#search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]#search-bar:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        /* Düzenleme formunun başlangıçta gizli olması */
+        #edit-form-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Patient Management</h1>
+
+    <!-- Düzenleme Formu -->
+    <div id="edit-form-container" class="form-container">
+        <h2>Edit Patient</h2>
+        <form id="edit-form" onsubmit="updatePatient(event)">
+            <input type="hidden" id="edit-id" />
+            <input type="text" id="edit-name" placeholder="Name" required />
+            <input type="text" id="edit-lastName" placeholder="Last Name" required />
+            <input type="text" id="edit-tcNO" placeholder="TC NO" disabled />
+            <button type="submit" class="update-btn">Update Patient</button>
+        </form>
+    </div>
+
+    <!-- Patient List -->
+    <div class="patients-list">
+        <h2>Patients</h2>
+        <input type="text" id="search-bar" placeholder="Search patients by name or TC NO" oninput="searchPatients()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last Name</th>
+                    <th>TC NO</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table-body">
+                <!-- Hastalar buraya eklenecek -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let patients = [];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await fetchPatients();
+        });
+
+        async function fetchPatients() {
+            try {
+                const response = await fetch('/patients');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                patients = await response.json();
+                renderPatients();
+            } catch (error) {
+                console.error('Hata:', error);
+            }
+        }
+
+        function renderPatients() {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            patients.forEach(patient => {
+                const row = `<tr>
+                                        <td>${patient.name}</td>
+                                        <td>${patient.lastName}</td>
+                                        <td>${patient.tcNO}</td>
+                                        <td class="actions">
+                                            <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                                        </td>
+                                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function editPatient(id) {
+            const patient = patients.find(p => p.id === id);
+            if (!patient) return;
+
+            document.getElementById('edit-id').value = patient.id;
+            document.getElementById('edit-name').value = patient.name;
+            document.getElementById('edit-lastName').value = patient.lastName;
+            document.getElementById('edit-tcNO').value = patient.tcNO;
+
+            document.getElementById('edit-form-container').style.display = 'block';
+        }
+
+        async function updatePatient(event) {
+            event.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const lastName = document.getElementById('edit-lastName').value;
+
+            try {
+                const response = await fetch(`/patients/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, lastName })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to update patient.');
+                }
+                patients = patients.map(p => p.id === id ? { ...p, name, lastName } : p);
+                renderPatients();
+
+                document.getElementById('edit-form-container').style.display = 'none';
+                document.getElementById('edit-form').reset();
+
+                alert('Patient updated successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating the patient.');
+            }
+        }
+
+        async function deletePatient(id) {
+            const confirmation = confirm('Are you sure you want to delete this patient?');
+            if (!confirmation) return;
+
+            try {
+                const response = await fetch(`/patients/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete patient.');
+                }
+                patients = patients.filter(patient => patient.id !== id);
+                renderPatients();
+                alert('Patient deleted successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the patient.');
+            }
+        }
+
+        function searchPatients() {
+            const query = document.getElementById('search-bar').value.toLowerCase();
+            const filteredPatients = patients.filter(patient =>
+                patient.name.toLowerCase().includes(query) || patient.tcNO.includes(query)
+            );
+            renderFilteredPatients(filteredPatients);
+        }
+
+        function renderFilteredPatients(filteredPatients) {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            filteredPatients.forEach(patient => {
+                const row = `<tr>
+                                        <td>${patient.name}</td>
+                                        <td>${patient.lastName}</td>
+                                        <td>${patient.tcNO}</td>
+                                        <td class="actions">
+                                            <button class="edit-btn" onclick="editPatient('${patient.id}')">Edit</button>
+                                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                                        </td>
+                                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+    </script>
+
+</body>
+</html>
+ *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #eaf4fc;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 30px;
+        }
+
+        .form-container, .patients-list {
+            margin: 0 auto;
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]:focus, input[type="number"]:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        input[type="submit"], .update-btn {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            input[type="submit"]:hover, .update-btn:hover {
+                background-color: #1665c1;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #d0e0f5;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 7px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+            .delete-btn:hover {
+                background-color: #d32f2f;
+            }
+
+        input[type="text"]#search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #b0c4de;
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]#search-bar:focus {
+                border-color: #1a73e8;
+                outline: none;
+            }
+
+        /* Düzenleme formunun başlangıçta gizli olması */
+        #edit-form-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Patient Management</h1>
+
+    <!-- Düzenleme Formu -->
+    <div id="edit-form-container" style="display:none;">
+        <h2>Edit Patient</h2>
+        <form id="edit-form" onsubmit="updatePatient(event)">
+            <input type="hidden" id="edit-id" />
+            <input type="text" id="edit-name" placeholder="Name" required />
+            <input type="text" id="edit-lastName" placeholder="Last Name" required />
+            <input type="text" id="edit-tcNO" placeholder="TC NO" required />
+            <button type="submit">Update Patient</button>
+            <button type="button" onclick="closeEditForm()">Cancel</button>
+        </form>
+    </div>
+
+    <!-- Patient List -->
+    <div class="patients-list">
+        <h2>Patients</h2>
+        <input type="text" id="search-bar" placeholder="Search patients by name or TC NO" oninput="searchPatients()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last Name</th>
+                    <th>TC NO</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table-body">
+                <!-- Hastalar buraya eklenecek -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let patients = [];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await fetchPatients();
+        });
+
+        async function fetchPatients() {
+            try {
+                const response = await fetch('/patients');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                patients = await response.json();
+                renderPatients();
+            } catch (error) {
+                console.error('Hata:', error);
+            }
+        }
+
+        function renderPatients() {
+            const tbody = document.getElementById('patients-table-body');
+            tbody.innerHTML = '';
+            patients.forEach(patient => {
+                const row = `<tr>
+                                        <td>${patient.name}</td>
+                                        <td>${patient.lastName}</td>
+                                        <td>${patient.tcNO}</td>
+                                        <td class="actions">
+                                            <button class="delete-btn" onclick="deletePatient('${patient.id}')">Delete</button>
+                                        </td>
+                                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        async function deletePatient(id) {
+            const confirmation = confirm('Are you sure you want to delete this patient?');
+            if (!confirmation) return;
+
+            try {
+                const response = await fetch(`/patients/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    throw new Error(errorMessage);
+                }
+
+                patients = patients.filter(p => p.id !== id);
+                renderPatients();
+                alert('Patient deleted successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the patient: ' + error.message);
+            }
+        }
+
+        function searchPatients() {
+            const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+            const filteredPatients = patients.filter(patient => {
+                return (
+                    patient.name.toLowerCase().includes(searchTerm) ||
+                    patient.lastName.toLowerCase().includes(searchTerm) ||
+                    patient.tcNO.includes(searchTerm)
+                );
+            });
+            renderPatients(filteredPatients);
+        }
+    </script>
+
+</body>
+</html>
+

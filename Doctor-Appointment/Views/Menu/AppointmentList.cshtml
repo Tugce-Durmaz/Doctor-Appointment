@@ -1,452 +1,225 @@
-﻿@* <!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Randevu Yönetimi</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <title>Hasta Yönetimi</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* Stil ayarları */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f3;
+            color: #333;
         }
 
         .container {
-            margin-top: 50px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
+            max-width: 600px;
+            margin: 50px auto;
             padding: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
         }
 
+            .container:hover {
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            }
+
         h1 {
+            text-align: center;
             margin-bottom: 30px;
             color: #007BFF;
         }
 
+        .form-section {
+            margin-bottom: 40px;
+        }
+
         h2 {
-            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 12px;
             margin-bottom: 20px;
-            color: #343a40;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
         }
 
-        .form-section, .appointments-section {
-            margin-bottom: 30px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #f1f1f1;
-        }
+            input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus {
+                border-color: #007BFF;
+                outline: none;
+            }
 
-        .btn-custom {
+        .btn {
             background-color: #007BFF;
-            color: white;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
         }
 
-            .btn-custom:hover {
+            .btn:hover {
                 background-color: #0056b3;
             }
 
-        .appointment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-            .appointment-item:last-child {
-                border-bottom: none;
-            }
-
-        .delete-btn, .update-btn {
-            margin-left: 10px;
-        }
-
-        .alert {
+        /* Mesaj stili */
+        #message {
             margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center">Randevu Yönetimi</h1>
+        <h1>Hasta Yönetimi</h1>
 
         <div class="form-section">
-            <h2>Yeni Randevu Oluştur <i class="fas fa-plus-circle"></i></h2>
-            <form id="createAppointmentForm" asp-action="Create" method="POST">
-                <div class="form-group">
-                    <label for="patientName">Hasta Adı:</label>
-                    <input type="text" id="patientName" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentTime">Randevu Zamanı:</label>
-                    <input type="datetime-local" id="appointmentTime" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-custom">Randevu Oluştur <i class="fas fa-calendar-plus"></i></button>
-            </form>
-            <div id="message" class="alert" style="display:none;"></div>
-        </div>
+            <h2>Yeni Randevu Oluştur</h2>
+            <form id="createAppointmentForm" method="POST">
+                <label for="patientId">Hasta Id:</label>
+                <input type="text" id="patientId" name="patientId" placeholder="Hasta Id girin..." required>
 
-        <div class="appointments-section">
-            <h2>Tüm Randevular <i class="fas fa-list"></i></h2>
-            <ul id="appointmentsList" class="list-unstyled"></ul>
+                <label for="date">Randevu Tarihi:</label>
+                <input type="date" id="date" name="date" required>
+
+                <label for="policlinics">Poliklinik Seçin:</label>
+                <select id="policlinics" name="policlinics" required>
+                    <option value="">Poliklinik seçin...</option>
+                </select>
+
+                <label for="doctors">Doktor Seçin:</label>
+                <select id="doctors" name="doctors" required>
+                    <option value="">Doktor seçin...</option>
+                </select>
+
+                <button type="submit" class="btn">Randevu Oluştur</button>
+            </form>
+
+            <!-- Ekranda mesajın görüntüleneceği alan -->
+            <div id="message" style="display: none;">
+                <span id="messageIcon" style="display: inline-block; margin-right: 10px;"></span>
+                <span id="messageText"></span>
+            </div>
         </div>
     </div>
 
     <script>
-        const apiUrl = 'http://localhost:7217/appointments'; // API URL
-
-        // Randevuları listeleme fonksiyonu
-        async function fetchAppointments() {
-            const response = await fetch(apiUrl);
-            const appointments = await response.json();
-            const appointmentsList = $('#appointmentsList');
-            appointmentsList.empty();
-            appointments.forEach(appointment => {
-                appointmentsList.append(`
-                            <li class="appointment-item">
-                                <div>
-                                    <strong>${appointment.patientName}</strong> - ${new Date(appointment.appointmentTime).toLocaleString()}
-                                </div>
-                                <div>
-                                    <button class="btn btn-warning btn-sm update-btn" onclick="showUpdateForm(${appointment.id}, '${appointment.patientName}', '${appointment.appointmentTime}')"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-danger btn-sm delete-btn" onclick="deleteAppointment(${appointment.id})"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </li>
-                        `);
-            });
-        }
-
-        // Yeni randevu oluşturma
-        $('#createAppointmentForm').on('submit', async function (event) {
-            event.preventDefault();
-            const patientName = $('#patientName').val();
-            const appointmentTime = $('#appointmentTime').val();
-            const appointmentData = { patientName, appointmentTime };
-
-            await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(appointmentData),
-            });
-
-            $('#createAppointmentForm')[0].reset(); // Formu sıfırla
-            $('#message').text('Randevu başarıyla oluşturuldu.').addClass('alert-success').show();
-            fetchAppointments(); // Randevuları yenile
-
-            setTimeout(() => {
-                $('#message').fadeOut();
-            }, 3000);
-        });
-
-        // Randevu silme
-        async function deleteAppointment(id) {
-            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
-            $('#message').text('Randevu başarıyla silindi.').addClass('alert-danger').show();
-            fetchAppointments(); // Randevuları yenile
-
-            setTimeout(() => {
-                $('#message').fadeOut();
-            }, 3000);
-        }
-
-        // Randevu güncelleme
-        function showUpdateForm(id, patientName, appointmentTime) {
-            $('#patientName').val(patientName);
-            $('#appointmentTime').val(appointmentTime);
-
-            $('#createAppointmentForm').off('submit').on('submit', async function (event) {
-                event.preventDefault();
-                const updatedAppointmentData = {
-                    patientName: $('#patientName').val(),
-                    appointmentTime: $('#appointmentTime').val(),
-                };
-
-                await fetch(`${apiUrl}/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedAppointmentData),
-                });
-
-                $('#createAppointmentForm')[0].reset(); // Formu sıfırla
-                $('#message').text('Randevu başarıyla güncellendi.').addClass('alert-success').show();
-                fetchAppointments(); // Randevuları yenile
-
-                setTimeout(() => {
-                    $('#message').fadeOut();
-                }, 3000);
-
-                // Formu yeni randevu ekleme moduna geri döndür
-                $('#createAppointmentForm').off('submit').on('submit', async function (event) {
-                    event.preventDefault();
-                    const newAppointmentData = {
-                        patientName: $('#patientName').val(),
-                        appointmentTime: $('#appointmentTime').val(),
-                    };
-                    await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newAppointmentData),
+        // Poliklinik ve doktor verilerini yükle
+        $(document).ready(function () {
+            // Poliklinik verilerini çek
+            $.ajax({
+                url: '/policlinics', // API URL'yi güncelleyin
+                method: 'GET',
+                success: function (data) {
+                    data.forEach(function (policlinic) {
+                        $('#policlinics').append(new Option(policlinic.name, policlinic.id));
                     });
-                    fetchAppointments();
-                });
+                },
+                error: function (error) {
+                    console.error('Poliklinikler yüklenirken hata oluştu:', error);
+                }
             });
-        }
 
-        // Sayfa yüklendiğinde randevuları getir
-        $(document).ready(function () {
-            fetchAppointments();
+            // Poliklinik değiştiğinde doktorları yükle
+            $('#policlinics').change(function () {
+                const selectedPoliclinicId = $(this).val();
+                $('#doctors').empty().append(new Option('Doktor seçin...', '')); // Seçimi sıfırla
+
+                if (selectedPoliclinicId) {
+                    $.ajax({
+                        url: '/doctors/' + selectedPoliclinicId, // API URL'yi güncelleyin
+                        method: 'GET',
+                        success: function (data) {
+                            data.forEach(function (doctor) {
+                                $('#doctors').append(new Option(doctor.name, doctor.id));
+                            });
+                        },
+                        error: function (error) {
+                            console.error('Doktorlar yüklenirken hata oluştu:', error);
+                        }
+                    });
+                }
+            });
         });
-    </script>
-</body>
-</html>
- *@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Randevu Yönetimi</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .container {
-            margin-top: 50px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-            padding: 30px;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-            color: #007BFF;
-        }
-
-        h2 {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            color: #343a40;
-        }
-
-        .form-section, .appointments-section {
-            margin-bottom: 30px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #f1f1f1;
-        }
-
-        .btn-custom {
-            background-color: #007BFF;
-            color: white;
-        }
-
-            .btn-custom:hover {
-                background-color: #0056b3;
-            }
-
-        .appointment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-            .appointment-item:last-child {
-                border-bottom: none;
-            }
-
-        .delete-btn, .update-btn {
-            margin-left: 10px;
-        }
-
-        .alert {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="text-center">Randevu Yönetimi</h1>
-
-        <div class="form-section">
-            <h2>Yeni Randevu Oluştur <i class="fas fa-plus-circle"></i></h2>
-            <form id="createAppointmentForm" asp-action="Create" method="POST">
-                <div class="form-group">
-                    <label for="patientTC">Hasta T.C. No:</label>
-                    <input type="text" id="patientTC" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentTime">Randevu Zamanı:</label>
-                    <input type="datetime-local" id="appointmentTime" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="doctorSelect">Doktor Seçimi:</label>
-                    <select id="doctorSelect" class="form-control" required>
-                        <option value="">Doktor Seçiniz</option>
-                        <!-- Dinamik olarak doktorlar buraya eklenecek -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="policlinicSelect">Poliklinik Seçimi:</label>
-                    <select id="policlinicSelect" class="form-control" required>
-                        <option value="">Poliklinik Seçiniz</option>
-                        <!-- Dinamik olarak poliklinikler buraya eklenecek -->
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-custom">Randevu Oluştur <i class="fas fa-calendar-plus"></i></button>
-            </form>
-            <div id="message" class="alert" style="display:none;"></div>
-        </div>
-
-        <div class="appointments-section">
-            <h2>Tüm Randevular <i class="fas fa-list"></i></h2>
-            <ul id="appointmentsList" class="list-unstyled"></ul>
-        </div>
-    </div>
-
-    <script>
-        const apiUrl = 'https://localhost:7217/appointments'; // API URL
-
-        // Dinamik olarak doktor ve poliklinikleri doldur
-        // async function loadDoctorsAndpoliclinics() {
-        //     try {
-        //         const doctorsResponse = await fetch('https://localhost:7217/doctors');
-        //         if (!doctorsResponse.ok) throw new Error('Doktor verisi alınamadı.');
-
-        //         const doctors = await doctorsResponse.json();
-        //         console.log(doctors); // Gelen veriyi kontrol edin
-
-        //         const doctorSelect = $('#doctorSelect');
-        //         doctors.forEach(doctor => {
-        //             doctorSelect.append(`<option value="${doctor.id}">${doctor.name}</option>`);
-        //         });
-        //     } catch (error) {
-        //         console.error(error.message);
-        //         $('#message').text(error.message).addClass('alert-danger').show();
-        //         setTimeout(() => $('#message').fadeOut(), 3000);
-        //     }
-        // }
-
-
-        async function loadDoctorsAndpoliclinics() {
-            try {
-                // Doktorları yükleme
-                const doctorsResponse = await fetch('https://localhost:7217/doctors');
-                if (!doctorsResponse.ok) throw new Error('Doktor verisi alınamadı.');
-
-                const doctors = await doctorsResponse.json();
-                console.log(doctors); // Gelen veriyi kontrol edin
-
-                const doctorSelect = $('#doctorSelect');
-                doctors.forEach(doctor => {
-                    doctorSelect.append(`<option value="${doctor.id}">${doctor.name}</option>`);
-                });
-
-                // Poliklinikleri yükleme  
-                //Policlinicleri yükleyemedim !!!!!!!!
-                const policlinicsResponse = await fetch('https://localhost:7217/policlinics');
-                if (!policlinicsResponse.ok) throw new Error('Poliklinik verisi alınamadı.');
-
-                const policlinics = await policlinicsResponse.json();
-                console.log(policlinics); // Gelen veriyi kontrol edin
-
-                const policlinicSelect = $('#policlinicSelect');
-                policlinics.forEach(policlinic => {
-                    policlinicSelect.append(`<option value="${policlinic.id}">${policlinic.name}</option>`);
-                });
-
-            } catch (error) {
-                console.error(error.message);
-                $('#message').text(error.message).addClass('alert-danger').show();
-                setTimeout(() => $('#message').fadeOut(), 3000);
-            }
-        }
-        
-
-
-        async function fetchAppointments() {
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Randevuları getirirken hata oluştu.');
-                const appointments = await response.json();
-                const appointmentsList = $('#appointmentsList');
-                appointmentsList.empty();
-                appointments.forEach(appointment => {
-                    appointmentsList.append(`
-                                <li class="appointment-item">
-                                    <div>
-                                        <strong>${appointment.patientName}</strong> - ${new Date(appointment.appointmentTime).toLocaleString()}
-                                        (Doktor: ${appointment.doctorName}, Poliklinik: ${appointment.policlinicName})
-                                    </div>
-                                    <div>
-                                        <button class="btn btn-warning btn-sm update-btn" onclick="showUpdateForm(${appointment.id}, '${appointment.patientName}', '${appointment.appointmentTime}')"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-danger btn-sm delete-btn" onclick="deleteAppointment(${appointment.id})"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </li>
-                            `);
-                });
-            } catch (error) {
-                $('#message').text(error.message).addClass('alert-danger').show();
-                setTimeout(() => $('#message').fadeOut(), 3000);
-            }
-        }
 
         $('#createAppointmentForm').on('submit', async function (event) {
-            event.preventDefault();
-            const patientTC = $('#patientTC').val();
-            const appointmentTime = $('#appointmentTime').val();
-            const doctorId = $('#doctorSelect').val();
-            const policlinicId = $('#policlinicSelect').val();
+            event.preventDefault(); // Formun varsayılan gönderimini engelle
+
+            const patientId = $('#patientId').val();
+            const date = $('#date').val();
+            const policlinicId = $('#policlinics').val();
+            const doctorId = $('#doctors').val();
+
+            const patientData = {
+                PatientId: patientId,
+                Date: date,
+                PoliclinicId: policlinicId,
+                DoctorId: doctorId
+            };
 
             try {
-                // Hasta TC'yi kullanarak Hasta ID'sini getir
-                const patientResponse = await fetch(`https://localhost:7217/patients/${patientTC}`);
-                if (!patientResponse.ok) throw new Error('Hasta bilgileri getirilemedi.');
-                const patient = await patientResponse.json();
-
-                const appointmentData = {
-                    patientId: patient.id,
-                    appointmentTime,
-                    doctorId,
-                    policlinicId
-                };
-
-                const response = await fetch(apiUrl, {
+                const response = await fetch('/appointments', { // API URL burada doğrudan yazılabilir.
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(appointmentData),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(patientData),
                 });
-                if (!response.ok) throw new Error('Randevu oluştururken hata oluştu.');
 
-                $('#createAppointmentForm')[0].reset(); // Formu sıfırla
-                $('#message').text('Randevu başarıyla oluşturuldu.').addClass('alert-success').show();
-                fetchAppointments(); // Randevuları yenile
+                if (response.status === 409) { // 409 Conflict durumu
+                    $('#messageIcon').html('❌'); // Kırmızı çarpı ikonu
+                    $('#messageText').text('Daha önceden hasta kaydı var.'); // Hata mesajı
+                    $('#message').css('color', 'red').fadeIn(); // Mesaj alanını kırmızı yap ve göster
 
-                setTimeout(() => $('#message').fadeOut(), 3000);
+                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
+                    setTimeout(() => {
+                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
+                    }, 3000); // 3000 ms = 3 saniye
+                } else if (response.ok) {
+                    const data = await response.json();
+                    console.log('Hasta başarıyla oluşturuldu:', data);
+
+                    // Başarılı mesajı göster
+                    $('#messageIcon').html('✅'); // Yeşil tik ikonu
+                    $('#messageText').text('Hasta kaydı alınmıştır.'); // Mesaj
+                    $('#message').css('color', 'green').fadeIn(); // Mesaj alanını yeşil yap ve göster
+                    $('#createAppointmentForm')[0].reset(); // Formu sıfırla
+
+                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
+                    setTimeout(() => {
+                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
+                    }, 3000); // 3000 ms = 3 saniye
+                }
             } catch (error) {
-                $('#message').text(error.message).addClass('alert-danger').show();
-                setTimeout(() => $('#message').fadeOut(), 3000);
+                console.error('Hata:', error);
+                alert('Hasta oluşturulurken bir hata oluştu: ' + error.message);
             }
         });
-
-        // Sayfa yüklendiğinde doktor ve poliklinikleri getir
-        $(document).ready(function () {
-            fetchAppointments();
-            loadDoctorsAndpoliclinics();
-        });
-
     </script>
 </body>
 </html>

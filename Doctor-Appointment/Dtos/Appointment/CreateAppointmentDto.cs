@@ -11,12 +11,14 @@ namespace Doctor_Appointment.Dtos.Appointment
         [Required]
         public int PatientId { get; set; }
 
+
         [Required]
         public int DoctorId { get; set; }
 
         [Required]
         public int PoliclinicId { get; set; }
     }
+
 
 
 }

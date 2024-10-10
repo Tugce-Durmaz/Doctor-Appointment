@@ -29,6 +29,7 @@ namespace Doctor_Appointment.Service
         {
             var policlinic = await _policlinicRepository.FindByIdAsync(createAppointmentDto.PoliclinicId);
             if (policlinic == null)
+
             {
                 throw new KeyNotFoundException("Policlinic not found!");
             }

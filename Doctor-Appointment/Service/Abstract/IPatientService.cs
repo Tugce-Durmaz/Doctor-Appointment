@@ -11,6 +11,11 @@ namespace Doctor_Appointment.Service.Abstract
             Task<Patient> FindOneAsync(int id);
             Task RemoveAsync(int id);
             Task<int> UpdateAsync(int id, UpdatePatientDto updatePatientDto);
-        }
+        
+
+ 
+
+
+    }
     }
 

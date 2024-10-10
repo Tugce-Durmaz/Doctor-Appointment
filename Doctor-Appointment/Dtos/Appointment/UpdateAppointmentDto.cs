@@ -4,6 +4,7 @@
     {
         public new DateTime? Date { get; set; }
         public new int PatientId { get; set; }
+
         public new int DoctorId { get; set; }
         public new int PoliclinicId { get; set; }
     }

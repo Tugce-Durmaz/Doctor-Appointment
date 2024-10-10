@@ -31,6 +31,7 @@ namespace Doctor_Appointment.Controllers
         public async Task<ActionResult<IEnumerable<Policlinic>>> GetAll()
         {
             var policlinics = await _policlinicService.GetAllAsync();
+            Console.WriteLine("tEST");
             return Ok(policlinics);
 
         }

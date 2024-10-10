@@ -4,6 +4,7 @@ using Doctor_Appointment.Service;
 using Doctor_Appointment.Service.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -23,21 +24,50 @@ namespace Doctor_Appointment.Controllers
                 _appointmentService = appointmentService;
             }
 
-            [HttpPost]
-            public async Task<IActionResult> Create([FromBody] CreateAppointmentDto createAppointmentDto)
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] CreateAppointmentDto createAppointmentDto)
+        //{
+        //    var id = await _appointmentService.CreateAsync(createAppointmentDto);
+        //    return CreatedAtAction(nameof(FindOne), new { id }, new { id });
+        //}
+
+       
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateAppointmentDto createAppointmentDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Hataları yanıt olarak döndür
+            }
+
+            try
             {
                 var id = await _appointmentService.CreateAsync(createAppointmentDto);
                 return CreatedAtAction(nameof(FindOne), new { id }, new { id });
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Hata: {ex.Message}");
+                return StatusCode(500, "Bir hata oluştu.");
+            }
+        }
 
-            [HttpGet]
+
+
+
+
+        [HttpGet]
             public async Task<ActionResult<IEnumerable<Appointment>>> FindAll()
             {
                 var appointments = await _appointmentService.FindAllAsync();
                 return Ok(appointments);
             }
 
-            [HttpGet("{id}")]
+
+
+        [HttpGet("{id}")]
             public async Task<ActionResult<Appointment>> FindOne(int id)
             {
                 var appointment = await _appointmentService.FindOneAsync(id);

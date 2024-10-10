@@ -353,26 +353,6 @@
                 transform: translateY(-2px);
             }
 
-        .search-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-            .search-bar input {
-                flex: 1;
-                padding: 10px;
-                border-radius: 5px;
-                border: 1px solid #bdc3c7;
-                margin-right: 10px;
-                transition: border-color 0.3s;
-            }
-
-                .search-bar input:focus {
-                    border-color: #2980B9;
-                    outline: none;
-                }
-
         .doctor-list {
             margin-top: 20px;
         }
@@ -423,12 +403,6 @@
     <div class="container">
         <h1>Doktor Yönetimi</h1>
 
-        <!-- Doktor Arama -->
-        <div class="search-bar">
-            <input type="text" id="searchQuery" placeholder="Doktor adı veya uzmanlık alanı ara...">
-            <button id="searchBtn">Ara</button>
-        </div>
-
         <!-- Yeni Doktor Ekleme Formu -->
         <h2>Yeni Doktor Ekle</h2>
         <form id="createDoctorForm" asp-action="Create" method="POST">
@@ -438,12 +412,8 @@
             </div>
             <div class="form-group">
                 <label for="doctorLastName">Soyadı</label>
-                <input type="text" id="doctorLastName" placeholder="Doktor soyadını adı giriniz" required>
+                <input type="text" id="doctorLastName" placeholder="Doktor soyadını giriniz" required>
             </div>
-           @*  <div class="form-group">
-                <label for="doctorBranch">Uzmanlık Alanı</label>
-                <input type="text" id="doctorBranch" placeholder="Doktorun uzmanlık alanını giriniz" required>
-            </div> *@
             <button type="submit" id="addDoctorBtn">Doktor Ekle</button>
         </form>
 
@@ -464,14 +434,12 @@
                     $('#doctorList').empty();
                     data.forEach(function (doctor) {
                         $('#doctorList').append(`
-                                                <div class="doctor-item">
-                                                    <h3>${doctor.name}</h3>
-                                                             <h3>${doctor.lastName}</h3>
-                                                    
-                                                    <button onclick="deleteDoctor(${doctor.id})">Sil</button>
-                                                    <button class="edit-button" onclick="editDoctor(${doctor.id})">Düzenle</button>
-                                                </div>
-                                            `);
+                                                                <div class="doctor-item">
+                                                                    <h3>${doctor.name}</h3>
+                                                                    <h3>${doctor.lastName}</h3>
+                                                                    <button onclick="deleteDoctor(${doctor.id})">Sil</button>
+                                                                </div>
+                                                            `);
                     });
                 });
             }
@@ -501,7 +469,6 @@
                 });
             });
 
-
             // Doktor Silme
             window.deleteDoctor = function (id) {
                 if (confirm("Bu doktoru silmek istediğinize emin misiniz?")) {
@@ -516,46 +483,10 @@
                 }
             };
 
-            // Doktor Düzenleme
-            window.editDoctor = function (id) {
-                const doctorName = prompt("Yeni doktor adı:");
-                const doctorLastName = prompt("Yeni doktor Soyadı:");
-                const doctorBranch = prompt("Yeni uzmanlık alanı:");
-
-                $.ajax({
-                    url: `/doctors/${id}`,
-                    type: 'PATCH',
-                    contentType: "application/json",
-                    data: JSON.stringify({ name: doctorName, name: doctorLastName, branch: doctorBranch }),
-                    success: function () {
-                        loadDoctors();
-                        alert("Doktor başarıyla güncellendi!");
-                    }
-                });
-            };
-
-            // Doktor Arama
-            $('#searchBtn').click(function () {
-                const query = $('#searchQuery').val();
-                $.get(`/doctors/search?query=${query}`, function (data) {
-                    $('#doctorList').empty();
-                    data.forEach(function (doctor) {
-                        $('#doctorList').append(`
-                                                <div class="doctor-item">
-                                                    <h3>${doctor.name}</h3>
-                                                            <h3>${doctor.LastName}</h3>
-                                                    <p>Uzmanlık: ${doctor.branch}</p>
-                                                    <button onclick="deleteDoctor(${doctor.id})">Sil</button>
-                                                    <button class="edit-button" onclick="editDoctor(${doctor.id})">Düzenle</button>
-                                                </div>
-                                            `);
-                    });
-                });
-            });
-
             loadDoctors(); // Sayfa yüklendiğinde doktorları getir
         });
     </script>
 
 </body>
 </html>
+

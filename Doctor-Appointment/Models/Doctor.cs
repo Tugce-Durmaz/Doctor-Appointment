@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Doctor_Appointment.Models
 {        public class Doctor
@@ -23,8 +24,9 @@ namespace Doctor_Appointment.Models
 
             // Many-to-One relationship with Policlinic
             public int PoliclinicId { get; set; }
-            [ForeignKey("PoliclinicId")]
-            public virtual Policlinic Policlinic { get; set; }
+           [ForeignKey("PoliclinicId")]
+        [JsonIgnore]
+        public virtual Policlinic Policlinic { get; set; }
             
         public Doctor()
             {
