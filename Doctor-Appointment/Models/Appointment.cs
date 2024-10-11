@@ -12,10 +12,10 @@ namespace Doctor_Appointment.Models
             [Key]
             public int Id { get; set; }
 
-            //[Column(TypeName = "timestamp")]
+            
             public DateTime Date { get; set; }
 
-        // Many-to-One relationship with Patient
+            // Many-to-One relationship with Patient
         public int PatientId { get; set; }
             [ForeignKey("PatientId")]
             public virtual Patient Patient { get; set; }

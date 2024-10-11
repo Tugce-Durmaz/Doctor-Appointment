@@ -6,7 +6,7 @@ namespace Doctor_Appointment.Dtos.Policlinic
     {
 
         [Required]
-        [StringLength(100)] // İsteğe bağlı: Maksimum uzunluğu tanımlamak için
+        [StringLength(100)] 
         public string Name { get; set; }
     }
 

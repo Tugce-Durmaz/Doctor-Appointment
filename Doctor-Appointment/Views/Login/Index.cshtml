@@ -1,70 +1,4 @@
-﻿@* @model Doctor_Appointment.Models.Login
-
-@{
-    ViewData["Title"] = "Görevli Girişi";
-}
-
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .login-container {
-            max-width: 400px;
-            margin: auto;
-            padding: 30px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 100px;
-        }
-
-        .login-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .btn-primary {
-            width: 100%;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <h1 class="login-title">Görevli Girişi</h1>
-        <form method="post" asp-action="Login">
-            @Html.AntiForgeryToken() <!-- CSRF koruması için token ekleniyor -->
-            <div class="form-group">
-                <label asp-for="Username"></label>
-                <input asp-for="Username" class="form-control" />
-                <span asp-validation-for="Username" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" type="password" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            <button type="submit" class="btn btn-primary">Giriş Yap</button>
-        </form>
-
-        <p class="mt-3 text-center">
-            <a asp-controller="Account" asp-action="ForgotPassword">Şifrenizi mi unuttunuz?</a>
-        </p>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
- *@
+﻿
 @model Doctor_Appointment.Models.Login
 
 @{
@@ -79,55 +13,55 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <style>
         body {
-            background-color: #e9ecef; /* Daha soft bir arka plan rengi */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Daha modern bir yazı tipi */
+            background-color: #e9ecef; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .login-container {
-            max-width: 400px; /* Kartın genişliğini daraltıyoruz */
+            max-width: 400px; 
             margin: auto;
-            padding: 40px; /* İçerik alanını büyütmek için padding artırıldı */
+            padding: 40px; 
             background-color: #ffffff;
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Daha belirgin bir gölge efekti */
-            margin-top: 100px; /* Üst boşluğu artırmak için burada değişiklik yapıldı */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+            margin-top: 100px; 
         }
 
         .login-title {
-            font-size: 28px; /* Başlık boyutunu artırdık */
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 20px;
             text-align: center;
-            color: #343a40; /* Başlık için koyu renk */
+            color: #343a40;
         }
 
         .form-group label {
-            font-weight: 600; /* Label'ları kalın yapıyoruz */
-            color: #495057; /* Label rengi */
+            font-weight: 600; 
+            color: #495057; 
         }
 
         .btn-primary {
             width: 100%;
-            padding: 10px; /* Butonun içeriği için biraz boşluk ekliyoruz */
-            border-radius: 5px; /* Buton köşelerini yuvarlıyoruz */
-            background-color: #007bff; /* Buton rengi */
-            border: none; /* Kenar çerçevesini kaldırıyoruz */
-            transition: background-color 0.3s; /* Hover etkisi için geçiş */
+            padding: 10px; 
+            border-radius: 5px; 
+            background-color: #007bff; 
+            border: none; 
+            transition: background-color 0.3s; 
         }
 
             .btn-primary:hover {
-                background-color: #0056b3; /* Hover rengi */
+                background-color: #0056b3; 
             }
 
         .mt-3 {
-            margin-top: 20px; /* Alttaki çizgiden sonraki boşluğu artırmak için burayı değiştirdik */
+            margin-top: 20px; 
         }
 
         .footer {
             text-align: center;
-            margin-top: 30px; /* Footer için alan ekliyoruz */
+            margin-top: 30px; 
             font-size: 14px;
-            color: #6c757d; /* Daha açık bir metin rengi */
+            color: #6c757d; 
         }
     </style>
 </head>
@@ -135,7 +69,7 @@
     <div class="login-container">
         <h1 class="login-title">Görevli Girişi</h1>
         <form method="post" asp-action="Login">
-            @Html.AntiForgeryToken() <!-- CSRF koruması için token ekleniyor -->
+            @Html.AntiForgeryToken() 
             <div class="form-group">
                 <label asp-for="Username"></label>
                 <input asp-for="Username" class="form-control" placeholder="Kullanıcı Adı" />

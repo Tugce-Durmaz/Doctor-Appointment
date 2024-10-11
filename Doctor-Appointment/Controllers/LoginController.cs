@@ -29,14 +29,14 @@ namespace Doctor_Appointment.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Kullanıcı adı ve şifreyi veritabanında kontrol et
+               
                 var user = await _context.Login
                     .FirstOrDefaultAsync(u => u.Username == model.Username && u.Password == model.Password);
 
                 if (user != null)
                 {
-                    // Giriş başarılı, kullanıcıyı Menu sayfasına yönlendir
-                    return RedirectToAction("Menu", "Menu"); // Burayı güncelledik
+                   
+                    return RedirectToAction("Menu", "Menu"); 
                 }
                 else
                 {

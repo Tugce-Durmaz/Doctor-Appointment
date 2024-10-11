@@ -4,7 +4,7 @@ namespace Doctor_Appointment.Models
 {
     public class Login
     {
-        [Key] // Birincil anahtar olduğunu belirtin
+        [Key] 
         public int Id { get; set; }
 
         [Required]
@@ -13,6 +13,6 @@ namespace Doctor_Appointment.Models
 
         [Required]
         [StringLength(100)]
-        public string Password { get; set; } // Şifreyi hash'li olarak saklamanız önerilir.
+        public string Password { get; set; } 
     }
 }

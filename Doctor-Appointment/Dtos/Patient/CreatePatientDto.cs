@@ -6,16 +6,16 @@ namespace Doctor_Appointment.Dtos.Patient
     {
 
         [Required]
-        [StringLength(100)] // İsteğe bağlı: Maksimum uzunluğu tanımlamak için
+        [StringLength(100)] 
         public string Name { get; set; }
 
         [Required]
-        [StringLength(100)] // İsteğe bağlı: Maksimum uzunluğu tanımlamak için
+        [StringLength(100)]
         public string LastName { get; set; }
 
         [Required]
-        [Range(10000000000, 99999999999)] // TC Kimlik numarası için aralık
-        public long TcNO { get; set; } // long, TC kimlik numarası için daha büyük bir değer aralığı sağlar
+        [Range(10000000000, 99999999999)] 
+        public long TcNO { get; set; } 
     }
 
 }

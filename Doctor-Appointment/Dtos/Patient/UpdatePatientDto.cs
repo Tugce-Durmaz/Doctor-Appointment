@@ -4,7 +4,7 @@
     {
         public new string Name { get; set; }
         public new string LastName { get; set; }
-        public new long? TcNO { get; set; } // Nullable long
+        public new long? TcNO { get; set; } 
     }
 
 }

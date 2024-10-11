@@ -101,7 +101,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
-            margin-left: 10px; /* Sil butonları için boşluk ekledim */
+            margin-left: 10px; 
         }
 
             .delete-btn:hover {
@@ -140,9 +140,9 @@
     </div>
 
     <script>
-        const apiUrl = 'https://localhost:7217/policlinics'; // Doğru URL
+        const apiUrl = 'https://localhost:7217/policlinics'; 
 
-        // Kullanıcı bildirim fonksiyonu
+       
         function showNotification(message) {
             const notification = $('#notification');
             notification.text(message);
@@ -152,7 +152,7 @@
             }, 3000);
         }
 
-        // Poliklinikleri yükleme
+       
         function loadPoliclinics() {
             $.get(apiUrl, function (data) {
                 $('#policlinicsList').empty();
@@ -169,9 +169,8 @@
         }
 
         $(document).ready(function () {
-            loadPoliclinics(); // Sayfa yüklendiğinde poliklinikleri yükle
+            loadPoliclinics(); 
 
-            // Yeni poliklinik oluşturma
             $('#createPoliclinicForm').on('submit', async function (event) {
                 event.preventDefault();
 
@@ -186,9 +185,9 @@
                     });
 
                     if (response.ok) {
-                        loadPoliclinics(); // Poliklinik listesini yenile
+                        loadPoliclinics(); 
                         showNotification("Yeni poliklinik başarıyla oluşturuldu!");
-                        $('#createPoliclinicForm')[0].reset(); // Formu temizle
+                        $('#createPoliclinicForm')[0].reset(); 
                     } else {
                         const errorMessage = await response.text();
                         alert("Bir hata oluştu: " + errorMessage);
@@ -198,12 +197,12 @@
                 }
             });
 
-            // Poliklinik silme
+            
             window.deletePoliclinic = async function (id) {
                 try {
                     const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
                     if (response.ok) {
-                        loadPoliclinics(); // Poliklinik listesini yenile
+                        loadPoliclinics(); 
                         showNotification("Poliklinik başarıyla silindi.");
                     } else {
                         alert("Silme işleminde bir hata oluştu.");

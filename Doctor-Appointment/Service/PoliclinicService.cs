@@ -47,13 +47,13 @@ namespace Doctor_Appointment.Service
         {
             var policlinic = new Policlinic
             {
-                // DTO'dan alınan verilere göre Policlinic nesnesini oluşturun
+                
                 Name = createPoliclinicDto.Name,
-                // Diğer gerekli alanlar burada ayarlanabilir
+                
             };
 
             await _policlinicRepository.AddAsync(policlinic);
-            return policlinic.Id; // Veya gerekli dönüş türünü ayarlayın
+            return policlinic.Id; 
         }
 
         public async Task<IEnumerable<Policlinic>> GetAllAsync()
@@ -112,7 +112,7 @@ namespace Doctor_Appointment.Service
             }
 
             policlinic.Name = updatePoliclinicDto.Name;
-            // Diğer güncellemeleri burada yapın
+            
 
             await _policlinicRepository.UpdateAsync(policlinic);
             return policlinic.Id;

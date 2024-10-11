@@ -29,7 +29,7 @@ namespace Doctor_Appointment.Repositories
                 }
             }
 
-            return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id); // Burada bir değişiklik yaptım bunu kontrol etmen lazım en sonda.
+            return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id); 
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(string[] includeProperties = null)
@@ -67,9 +67,9 @@ namespace Doctor_Appointment.Repositories
 
         public async Task<int> CreateAsync(T entity)
         {
-            await _context.Set<T>().AddAsync(entity); // Varlığı veritabanına ekle
-            await _context.SaveChangesAsync(); // Değişiklikleri kaydet
-            return (entity as Patient)?.Id ?? -1; // Kayıt ID'sini döndür (veya -1)
+            await _context.Set<T>().AddAsync(entity); 
+            await _context.SaveChangesAsync(); 
+            return (entity as Patient)?.Id ?? -1; 
         }
     }
 }

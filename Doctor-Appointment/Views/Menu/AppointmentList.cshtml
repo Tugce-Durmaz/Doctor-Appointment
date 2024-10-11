@@ -1,243 +1,4 @@
-﻿@* <!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasta Yönetimi</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        /* Stil ayarları */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f3;
-            color: #333;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s;
-        }
-
-            .container:hover {
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #007BFF;
-        }
-
-        .form-section {
-            margin-bottom: 40px;
-        }
-
-        h2 {
-            margin-bottom: 15px;
-            font-size: 1.5em;
-            color: #333;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="number"], input[type="date"], select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            transition: border-color 0.3s;
-        }
-
-            input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus {
-                border-color: #007BFF;
-                outline: none;
-            }
-
-        .btn {
-            background-color: #007BFF;
-            color: #fff;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-            display: block;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-            .btn:hover {
-                background-color: #0056b3;
-            }
-
-        /* Mesaj stili */
-        #message {
-            margin-top: 20px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Hasta Yönetimi</h1>
-
-        <div class="form-section">
-            <h2>Yeni Randevu Oluştur</h2>
-            <form id="createAppointmentForm" method="POST">
-                <label for="patientId">Hasta Id:</label>
-                <input type="text" id="patientId" name="patientId" placeholder="Hasta Id girin..." required>
-
-                <label for="date">Randevu Tarihi:</label>
-                <input type="date" id="date" name="date" required>
-
-                <label for="policlinics">Poliklinik Seçin:</label>
-                <select id="policlinics" name="policlinics" required>
-                    <option value="">Poliklinik seçin...</option>
-                </select>
-
-                <label for="doctors">Doktor Seçin:</label>
-                <select id="doctors" name="doctors" required>
-                    <option value="">Doktor seçin...</option>
-                </select>
-
-                <button type="submit" class="btn">Randevu Oluştur</button>
-            </form>
-
-            <!-- Ekranda mesajın görüntüleneceği alan -->
-            <div id="message" style="display: none;">
-                <span id="messageIcon" style="display: inline-block; margin-right: 10px;"></span>
-                <span id="messageText"></span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Poliklinik ve doktor verilerini yükle
-        $(document).ready(function () {
-            // Poliklinik verilerini çek
-            var policlinics = [];
-            
-            $.ajax({
-                url: '/policlinics', // API URL'yi güncelleyin
-                method: 'GET',
-                success: function (data) {
-                    policlinics = data;
-                    data.forEach(function (policlinic) {
-                        $('#policlinics').append(new Option(policlinic.name, policlinic.id));
-                       
-                    });
-                },
-                error: function (error) {
-                    console.error('Poliklinikler yüklenirken hata oluştu:', error);
-                }
-            });
-
-            //Poliklinik değiştiğinde doktorları yükle
-            $('#policlinics').change(function (data) {
-                console.log(policlinics);
-                const selectedPoliclinicId = $(this).val();
-                const policlinic = policlinics.find(function (policlinic) {return  policlinic.id == selectedPoliclinicId })
-                $('#doctors').empty().append(new Option('Doktor seçin...', '')); // Seçimi sıfırla
-                policlinic.doctors.forEach(function (doctor) {
-                    console.log(doctor);
-
-                    $('#doctors').append(new Option(doctor.name, doctor.id));
-                });
-                
-
-
-            //     if (selectedPoliclinicId) {
-            //         $.ajax({
-            //             url: '/doctors/policlinics/' + selectedPoliclinicId, // API URL'yi güncelleyin
-            //             method: 'GET',
-            //             success: function (data) {
-            //                 data.forEach(function (doctor) {
-
-            //                     $('#doctors').append(new Option(doctor.name, doctor.id));
-            //                 });
-            //             },
-            //             error: function (error) {
-            //                 console.error('Doktorlar yüklenirken hata oluştu:', error);
-            //             }
-            //         });
-            //     }
-            });
-        });
-
-        $('#createAppointmentForm').on('submit', async function (event) {
-            event.preventDefault(); // Formun varsayılan gönderimini engelle
-
-            const patientId = $('#patientId').val();
-            const date = $('#date').val();
-            const policlinicId = $('#policlinics').val();
-            const doctorId = $('#doctors').val();
-
-            const patientData = {
-                PatientId: patientId,
-                Date: date,
-                PoliclinicId: policlinicId,
-                DoctorId: doctorId
-            };
-
-            try {
-                const response = await fetch('/appointments', { // API URL burada doğrudan yazılabilir.
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(patientData),
-                });
-
-                if (response.status === 409) { // 409 Conflict durumu
-                    $('#messageIcon').html('❌'); // Kırmızı çarpı ikonu
-                    $('#messageText').text('Daha önceden hasta kaydı var.'); // Hata mesajı
-                    $('#message').css('color', 'red').fadeIn(); // Mesaj alanını kırmızı yap ve göster
-
-                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
-                    setTimeout(() => {
-                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
-                    }, 3000); // 3000 ms = 3 saniye
-                } else if (response.ok) {
-                    const data = await response.json();
-                    console.log('Hasta başarıyla oluşturuldu:', data);
-
-                    // Başarılı mesajı göster
-                    $('#messageIcon').html('✅'); // Yeşil tik ikonu
-                    $('#messageText').text('Hasta kaydı alınmıştır.'); // Mesaj
-                    $('#message').css('color', 'green').fadeIn(); // Mesaj alanını yeşil yap ve göster
-                    $('#createAppointmentForm')[0].reset(); // Formu sıfırla
-
-                    // Mesajın görünmesini sağla ve 3 saniye sonra kaybolsun
-                    setTimeout(() => {
-                        $('#message').fadeOut(); // Mesajı yavaşça kaybet
-                    }, 3000); // 3000 ms = 3 saniye
-                }
-            } catch (error) {
-                console.error('Hata:', error);
-                alert('Hasta oluşturulurken bir hata oluştu: ' + error.message);
-            }
-        });
-    </script>
-</body>
-</html>
- *@
+﻿
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -246,7 +7,7 @@
     <title>Hasta Yönetimi</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Stil ayarları */
+      
         * {
             margin: 0;
             padding: 0;
@@ -370,9 +131,9 @@
         $(document).ready(function () {
             var policlinics = [];
             const message = $('#message');
-            message.hide(); // Mesaj alanını başlangıçta gizle
+            message.hide(); 
 
-            // Poliklinikler için AJAX isteği
+           
             $.ajax({
                 url: '/policlinics',
                 method: 'GET',
@@ -387,7 +148,6 @@
                 }
             });
 
-            // Poliklinik değiştiğinde doktorları yükle
             $('#policlinics').change(function () {
                 const selectedPoliclinicId = $(this).val();
                 $('#doctors').empty().append(new Option('Doktor seçin...', ''));
@@ -400,12 +160,12 @@
             });
         });
 
-        // Form gönderimi
+       
         $('#createAppointmentForm').on('submit', async function (event) {
             event.preventDefault();
 
             const patientId = $('#patientId').val();
-            const dateTime = $('#datetime').val(); // 'date' yerine 'datetime' kullanın
+            const dateTime = $('#datetime').val(); 
             const policlinicId = $('#policlinics').val();
             const doctorId = $('#doctors').val();
 
@@ -425,7 +185,7 @@
                     body: JSON.stringify(patientData),
                 });
 
-                // Mesajı gösterme
+               
                 if (response.status === 409) {
                     $('#messageIcon').html('❌');
                     $('#messageText').text('Daha önceden hasta kaydı var.');
