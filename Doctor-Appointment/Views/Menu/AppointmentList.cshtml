@@ -7,7 +7,6 @@
     <title>Hasta Yönetimi</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-      
         * {
             margin: 0;
             padding: 0;
@@ -40,7 +39,7 @@
             color: #007BFF;
         }
 
-        .form-section {
+        .form-section, .appointment-list {
             margin-bottom: 40px;
         }
 
@@ -92,6 +91,25 @@
             text-align: center;
             display: none;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -125,15 +143,32 @@
                 <span id="messageText"></span>
             </div>
         </div>
+
+        <div class="appointment-list">
+            <h2>Randevu Listesi</h2>
+            <table id="appointmentTable">
+                <thead>
+                    <tr>
+                        <th>Hasta ID</th>
+                        <th>Randevu Tarihi</th>
+                        <th>Poliklinik ID</th>
+                        <th>Doktor ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Randevular buraya yüklenecek -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         $(document).ready(function () {
             var policlinics = [];
             const message = $('#message');
-            message.hide(); 
+            message.hide();
 
-           
+            // Poliklinik bilgilerini yükle
             $.ajax({
                 url: '/policlinics',
                 method: 'GET',
@@ -148,6 +183,7 @@
                 }
             });
 
+            // Poliklinik değiştiğinde doktorları yükle
             $('#policlinics').change(function () {
                 const selectedPoliclinicId = $(this).val();
                 $('#doctors').empty().append(new Option('Doktor seçin...', ''));
@@ -158,55 +194,83 @@
                     });
                 }
             });
-        });
 
-       
-        $('#createAppointmentForm').on('submit', async function (event) {
-            event.preventDefault();
-
-            const patientId = $('#patientId').val();
-            const dateTime = $('#datetime').val(); 
-            const policlinicId = $('#policlinics').val();
-            const doctorId = $('#doctors').val();
-
-            const patientData = {
-                PatientId:parseInt(patientId),
-                Date:dateTime,
-                PoliclinicId: parseInt(policlinicId),
-                DoctorId: parseInt(doctorId)
-            };
-
-            try {
-                const response = await fetch('/appointments', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+            // Randevuları DB'den çek ve tabloya ekle
+            function loadAppointments() {
+                $.ajax({
+                    url: '/appointments',
+                    method: 'GET',
+                    success: function (data) {
+                        const tableBody = $('#appointmentTable tbody');
+                        tableBody.empty(); // Mevcut tabloyu temizle
+                        data.forEach(function (appointment) {
+                            const row = `
+                                        <tr>
+                                            <td>${appointment.patientId}</td>
+                                            <td>${appointment.date}</td>
+                                            <td>${appointment.policlinicId}</td>
+                                            <td>${appointment.doctorId}</td>
+                                        </tr>
+                                    `;
+                            tableBody.append(row);
+                        });
                     },
-                    body: JSON.stringify(patientData),
+                    error: function (error) {
+                        console.error('Randevular yüklenirken hata oluştu:', error);
+                    }
                 });
-
-               
-                if (response.status === 409) {
-                    $('#messageIcon').html('❌');
-                    $('#messageText').text('Daha önceden hasta kaydı var.');
-                    message.css('color', 'red').fadeIn();
-                } else if (response.ok) {
-                    const data = await response.json();
-                    console.log('Hasta başarıyla oluşturuldu:', data);
-                    $('#messageIcon').html('✅');
-                    $('#messageText').text('Hasta kaydı alınmıştır.');
-                    message.css('color', 'green').fadeIn();
-                    $('#createAppointmentForm')[0].reset();
-                }
-                setTimeout(() => {
-                    message.fadeOut();
-                }, 3000);
-            } catch (error) {
-                console.error('Hata:', error);
-                alert('Hasta oluşturulurken bir hata oluştu: ' + error.message);
             }
+
+            // Sayfa yüklendiğinde randevuları yükle
+            loadAppointments();
+
+            // Yeni randevu oluştur
+            $('#createAppointmentForm').on('submit', async function (event) {
+                event.preventDefault();
+
+                const patientId = $('#patientId').val();
+                const dateTime = $('#datetime').val();
+                const policlinicId = $('#policlinics').val();
+                const doctorId = $('#doctors').val();
+
+                const patientData = {
+                    PatientId: parseInt(patientId),
+                    Date: dateTime,
+                    PoliclinicId:(policlinicId),
+                    DoctorId: parseInt(doctorId)
+                };
+
+                try {
+                    const response = await fetch('/appointments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(patientData),
+                    });
+
+                    if (response.status === 409) {
+                        $('#messageIcon').html('❌');
+                        $('#messageText').text('Daha önceden hasta kaydı var.');
+                        message.css('color', 'red').fadeIn();
+                    } else if (response.ok) {
+                        const data = await response.json();
+                        console.log('Hasta başarıyla oluşturuldu:', data);
+                        $('#messageIcon').html('✅');
+                        $('#messageText').text('Hasta kaydı alınmıştır.');
+                        message.css('color', 'green').fadeIn();
+                        $('#createAppointmentForm')[0].reset();
+                        loadAppointments(); // Yeni randevuyu ekledikten sonra listeyi güncelle
+                    }
+                    setTimeout(() => {
+                        message.fadeOut();
+                    }, 3000);
+                } catch (error) {
+                    console.error('Hata:', error);
+                    alert('Hasta oluşturulurken bir hata oluştu: ' + error.message);
+                }
+            });
         });
     </script>
 </body>
 </html>
-

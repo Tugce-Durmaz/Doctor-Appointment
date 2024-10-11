@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿@* <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -209,6 +209,226 @@
                     }
                 } catch (error) {
                     alert("Bir hata oluştu: " + error.message);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+ *@
+
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poliklinik Listesi</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007BFF;
+        }
+
+        .form-section, .policlinics-section {
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+
+            input[type="text"]:focus {
+                border-color: #007BFF;
+                outline: none;
+            }
+
+        .btn {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+            .btn:hover {
+                background-color: #0056b3;
+            }
+
+        .policlinics-section ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .policlinics-section li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+
+            .delete-btn:hover {
+                background-color: #c82333;
+            }
+
+        .notification {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Poliklinik Listesi</h1>
+
+        <div class="notification" id="notification"></div>
+
+        <div class="form-section">
+            <h2>Yeni Poliklinik Oluştur</h2>
+            <form id="createPoliclinicForm" method="POST">
+                <label for="name">Poliklinik Adı:</label>
+                <input type="text" id="name" required>
+                <button type="submit" class="btn">Poliklinik Oluştur</button>
+            </form>
+        </div>
+
+        <div class="policlinics-list">
+            <h2>Tüm Poliklinikler</h2>
+            <div id="policlinicsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'https://localhost:7217/policlinics';
+
+        function showNotification(message) {
+            const notification = $('#notification');
+            notification.text(message);
+            notification.show();
+            setTimeout(() => {
+                notification.hide();
+            }, 3000);
+        }
+
+        function loadPoliclinics() {
+            $.get(apiUrl, function (data) {
+                $('#policlinicsList').empty();
+                data.forEach(function (policlinic) {
+                    $('#policlinicsList').append(`
+                                <div class="doc-item">
+                                    <h3 style="flex: 1; margin-right: 10px;">${policlinic.name}</h3>
+                                    <button class="delete-btn" onclick="deletePoliclinic(${policlinic.id})">Sil</button>
+                                </div>
+                            `);
+                });
+            });
+        }
+
+        $(document).ready(function () {
+            loadPoliclinics();
+
+            $('#createPoliclinicForm').on('submit', async function (event) {
+                event.preventDefault();
+
+                const name = $('#name').val();
+                const policlinicData = { name };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(policlinicData),
+                    });
+
+                    if (response.ok) {
+                        loadPoliclinics();
+                        showNotification("Yeni poliklinik başarıyla oluşturuldu!");
+                        $('#createPoliclinicForm')[0].reset();
+                    } else {
+                        const errorMessage = await response.text();
+                        alert("Bir hata oluştu: " + errorMessage);
+                    }
+                } catch (error) {
+                    alert("Bir hata oluştu: " + error.message);
+                }
+            });
+
+            window.deletePoliclinic = async function (id) {
+                if (confirm("Bu polikliniği silmek istediğinize emin misiniz?")) { // Confirmation before deletion
+                    try {
+                        const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            loadPoliclinics();
+                            showNotification("Poliklinik başarıyla silindi.");
+                        } else {
+                            const errorMessage = await response.text(); // Get error message for debugging
+                            console.error("Delete error:", errorMessage); // Log error for debugging
+                            alert("Silme işleminde bir hata oluştu: " + errorMessage);
+                        }
+                    } catch (error) {
+                        alert("Bir hata oluştu: " + error.message);
+                    }
                 }
             }
         });
