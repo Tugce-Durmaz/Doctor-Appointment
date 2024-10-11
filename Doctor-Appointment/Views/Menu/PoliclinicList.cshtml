@@ -415,15 +415,15 @@
             });
 
             window.deletePoliclinic = async function (id) {
-                if (confirm("Bu polikliniği silmek istediğinize emin misiniz?")) { // Confirmation before deletion
+                if (confirm("Bu polikliniği silmek istediğinize emin misiniz?")) { 
                     try {
                         const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
                         if (response.ok) {
                             loadPoliclinics();
                             showNotification("Poliklinik başarıyla silindi.");
                         } else {
-                            const errorMessage = await response.text(); // Get error message for debugging
-                            console.error("Delete error:", errorMessage); // Log error for debugging
+                            const errorMessage = await response.text(); 
+                            console.error("Delete error:", errorMessage); 
                             alert("Silme işleminde bir hata oluştu: " + errorMessage);
                         }
                     } catch (error) {
