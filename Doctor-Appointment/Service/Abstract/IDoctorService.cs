@@ -11,5 +11,6 @@ namespace Doctor_Appointment.Service.Abstract
             Task<int> UpdateAsync(int id, UpdateDoctorDto updateDoctorDto);
             Task RemoveAsync(int id);
         
+
     }
     }

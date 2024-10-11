@@ -3,6 +3,7 @@ using Doctor_Appointment.Exceptions;
 using Doctor_Appointment.Models;
 using Doctor_Appointment.Repositories;
 using Doctor_Appointment.Service.Abstract;
+using Microsoft.EntityFrameworkCore;
 
 namespace Doctor_Appointment.Service
 {
@@ -33,6 +34,7 @@ namespace Doctor_Appointment.Service
             return await _doctorRepository.GetAllAsync();
         }
 
+     
         public async Task<Doctor> FindOneAsync(int id)
         {
             var doctor = await _doctorRepository.FindByIdAsync(id);
@@ -69,5 +71,7 @@ namespace Doctor_Appointment.Service
             await _doctorRepository.UpdateAsync(doctor);
             return doctor.Id;
         }
+
+       
     }
 }

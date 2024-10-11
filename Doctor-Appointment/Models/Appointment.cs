@@ -12,7 +12,7 @@ namespace Doctor_Appointment.Models
             [Key]
             public int Id { get; set; }
 
-            [Column(TypeName = "timestamp")]
+            //[Column(TypeName = "timestamp")]
             public DateTime Date { get; set; }
 
         // Many-to-One relationship with Patient

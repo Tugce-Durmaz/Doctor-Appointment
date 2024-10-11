@@ -45,7 +45,7 @@ namespace Doctor_Appointment.Service
             {
                 throw new KeyNotFoundException("Patient not found!");
             }
-
+            Console.WriteLine(createAppointmentDto.Date);
             var appointment = new Appointment
             {
                 Date = createAppointmentDto.Date,

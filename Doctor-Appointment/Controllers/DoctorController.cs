@@ -51,7 +51,7 @@ namespace Doctor_Appointment.Controllers
                 return Ok(doctor);
             }
 
-            [HttpPatch("{id}")]
+        [HttpPatch("{id}")]
             public async Task<IActionResult> Update(int id, [FromBody] UpdateDoctorDto updateDoctorDto)
             {
                 var updatedId = await _doctorService.UpdateAsync(id, updateDoctorDto);

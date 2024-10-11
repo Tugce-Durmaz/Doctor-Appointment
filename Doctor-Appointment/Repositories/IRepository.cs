@@ -11,8 +11,7 @@ namespace Doctor_Appointment.Repositories
             Task AddAsync(T entity);
             Task UpdateAsync(T entity);
             Task RemoveAsync(T entity);
-           
-
+        
     }
     }
 
